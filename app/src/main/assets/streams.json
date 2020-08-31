@@ -1,0 +1,11 @@
+[{
+    "name": "Stream 1",
+    "url": "localhost:8000"
+
+},
+{
+    "name": "Stream 2",
+    "url": "localhost:8000"
+}
+
+]
