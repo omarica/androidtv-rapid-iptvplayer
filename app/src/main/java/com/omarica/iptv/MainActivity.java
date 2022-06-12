@@ -15,6 +15,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         mAdapter = new PlaylistAdapter(MainActivity.this);
         mPlaylistList.setAdapter(mAdapter);
 
+
         mDatabase.child("streams").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -53,6 +55,9 @@ public class MainActivity extends AppCompatActivity {
 
                 streams.clear();
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+
+//                    Log.d("TAG", postSnapshot.toString());
+
                     Stream stream = postSnapshot.getValue(Stream.class);
                     streams.add(stream);
 
@@ -169,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
             byte[] buffer = new byte[size];
             is.read(buffer);
             is.close();
-            json = new String(buffer, "UTF-8");
+            json = new String(buffer, StandardCharsets.UTF_8);
         } catch (IOException ex) {
             ex.printStackTrace();
             return null;

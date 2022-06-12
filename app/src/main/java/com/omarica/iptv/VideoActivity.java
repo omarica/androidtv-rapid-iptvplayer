@@ -12,17 +12,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
-import com.google.android.exoplayer2.ui.PlayerView;
+import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.util.Util;
 
 import java.util.List;
 
@@ -31,15 +27,14 @@ import androidx.appcompat.app.AppCompatActivity;
 public class VideoActivity extends AppCompatActivity {
 
 
-    // VideoView videoView;
-    PlayerView playerView;
+    StyledPlayerView playerView;
     ProgressBar progressBar;
     LinearLayout linearLayout;
     TextView channelNumberTextView, channelNameTextView;
     AudioManager audioManager;
     int index;
     List<Stream> mStreams;
-    SimpleExoPlayer player;
+    ExoPlayer player;
     DataSource.Factory dataSourceFactory;
 
     @Override
@@ -70,48 +65,33 @@ public class VideoActivity extends AppCompatActivity {
 
     private void setUpVideo() {
 
-
-        player = ExoPlayerFactory.newSimpleInstance(this);
-
+        player = new ExoPlayer.Builder(getApplicationContext()).build();
         playerView.setPlayer(player);
-
         playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
         player.setVideoScalingMode(C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING);
 
-        // Produces DataSource instances through which media data is loaded.
-        dataSourceFactory = new DefaultDataSourceFactory(VideoActivity.this,
-                Util.getUserAgent(VideoActivity.this, "iptv"));
-
-
-        player.addListener(new Player.EventListener() {
+        player.addListener(new Player.Listener() {
             @Override
-            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-
-                if (playWhenReady && playbackState == Player.STATE_READY) {
-                    // media actually playing
+            public void onPlaybackStateChanged(int playbackState) {
+                if (playbackState == Player.STATE_READY) {
 
                     hideLoading();
 
-                } else if (playWhenReady) {
-                    // might be idle (plays after prepare()),
-                    // buffering (plays when data available)
-                    // or ended (plays when seek away from end)
-                    if (playbackState == Player.STATE_ENDED) {
-                        stop();
-                        play(index);
-                    }
+                } else if (playbackState == Player.STATE_ENDED) {
+
+                    stop();
+                    play(index);
                 } else {
-                    // player paused in any state
                 }
 
             }
 
+
             @Override
-            public void onPlayerError(ExoPlaybackException error) {
+            public void onPlayerError(PlaybackException error) {
 
                 stop();
                 play(index);
-
             }
         });
 
@@ -119,17 +99,14 @@ public class VideoActivity extends AppCompatActivity {
     }
 
     void showLoading() {
-        // progressBar.setVisibility(View.VISIBLE);
 
         channelNameTextView.setText(mStreams.get(index).getName());
         channelNumberTextView.setText((index + 1) + "");
         linearLayout.setVisibility(View.VISIBLE);
 
-
     }
 
     void hideLoading() {
-        //   progressBar.setVisibility(View.INVISIBLE);
         linearLayout.setVisibility(View.INVISIBLE);
     }
 
@@ -138,19 +115,12 @@ public class VideoActivity extends AppCompatActivity {
 
         showLoading();
 
-
         Uri uri = Uri.parse(mStreams.get(index).getUrl());
+        MediaItem mediaItem = MediaItem.fromUri(uri);
+        player.setMediaItem(mediaItem);
 
-        MediaSource videoSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
-                .createMediaSource(uri);
-
-        // Prepare the player with the source.
-
-
-        player.prepare(videoSource);
-        // Auto Play video as soon as it buffers
+        player.prepare();
         resumeLivePreview();
-
     }
 
 
@@ -158,15 +128,12 @@ public class VideoActivity extends AppCompatActivity {
     public void onPause() {
         super.onPause();
         stop();
-        //  pauseLivePreview();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        //setUpVideo();
         play(index);
-        //resumeLivePreview();
     }
 
 
@@ -181,7 +148,6 @@ public class VideoActivity extends AppCompatActivity {
             if (playerView != null && playerView.getPlayer() != null) {
                 playerView.getPlayer().release();
             }
-
 
         }
 

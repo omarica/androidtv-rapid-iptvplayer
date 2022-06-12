@@ -18,8 +18,8 @@ import rx.subjects.PublishSubject;
 public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.ItemHolder> {
     private final PublishSubject<String> onClickSubject = PublishSubject.create();
     private List<Stream> mItem;
-    private Context mContext;
-    private LayoutInflater mInflater;
+    private final Context mContext;
+    private final LayoutInflater mInflater;
     private int row_index = 0;
 
     public PlaylistAdapter(Context c) {
@@ -44,13 +44,14 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.ItemHo
     }
 
     @Override
-    public void onBindViewHolder(final ItemHolder holder, final int position) {
-        final Stream item = mItem.get(position);
+    public void onBindViewHolder( final ItemHolder holder,int position) {
+        int pos = holder.getBindingAdapterPosition();
+        final Stream item = mItem.get(pos);
         if (item != null) {
             holder.update(item);
         }
-        holder.number.setText((position + 1) + "");
-        if (position == row_index) {
+        holder.number.setText((pos + 1) + "");
+        if (pos == row_index) {
             holder.itemView.setBackgroundColor(Color.LTGRAY);
         } else {
             holder.itemView.setBackgroundColor(Color.WHITE);
@@ -62,7 +63,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.ItemHo
             public void onClick(View v) {
 
                 Intent intent = new Intent(mContext, VideoActivity.class);
-                intent.putExtra("index", position);
+                intent.putExtra("index", pos);
                 mContext.startActivity(intent);
 
             }
