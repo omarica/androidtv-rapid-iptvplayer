@@ -3,8 +3,6 @@ package com.omarica.iptv;
 public class Stream {
 
 
-
-
     private String name;
     private String url;
     private String logo;
